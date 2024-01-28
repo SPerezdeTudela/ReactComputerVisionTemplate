@@ -7,6 +7,7 @@ import Webcam from "react-webcam";
 import "./App.css";
 // 2. TODO - Import drawing utility here
 // e.g. import { drawRect } from "./utilities";
+
 import {drawRect} from "./utilities"
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
     // e.g. const net = await cocossd.load();
     
     //This loads the graph from the graph model
-    const modelName = "" //Put name from bucket here
+    const modelName = "cos://us-east/irvinehacks24-asl-model/model.json" //Put name from bucket here
     const net = await tf.loadGraphModel(modelName)
 
     //  Loop and detect hands
@@ -73,8 +74,8 @@ function App() {
       // drawSomething(obj, ctx)  
 
       //The 0.8 is the threshold for detections (like how accurate it is)
-      requestAnimationFrame(()=>{drawRect(boxes[0], classes[0], 
-        scores[0], 0.8, videoWidth, videoHeight, ctx)})
+      //requestAnimationFrame(()=>{drawRect(boxes[0], classes[0], 
+        //scores[0], 0.8, videoWidth, videoHeight, ctx)})
 
       //Dispose here in order to manage memory
       tf.dispose(img)
