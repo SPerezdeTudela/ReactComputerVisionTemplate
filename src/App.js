@@ -7,6 +7,7 @@ import Webcam from "react-webcam";
 import "./App.css";
 // 2. TODO - Import drawing utility here
 // e.g. import { drawRect } from "./utilities";
+import {drawRect} from "./utilities"
 
 function App() {
   const webcamRef = useRef(null);
@@ -17,10 +18,14 @@ function App() {
     // 3. TODO - Load network 
     // e.g. const net = await cocossd.load();
     
+    //This loads the graph from the graph model
+    const modelName = "" //Put name from bucket here
+    const net = await tf.loadGraphModel(modelName)
+
     //  Loop and detect hands
     setInterval(() => {
       detect(net);
-    }, 10);
+    }, 16.7); //Gives smooth detection
   };
 
   const detect = async (net) => {
@@ -44,13 +49,40 @@ function App() {
       canvasRef.current.height = videoHeight;
 
       // 4. TODO - Make Detections
-      // e.g. const obj = await net.detect(video);
+    
+      const img = tf.browser.fromPixels(video)
+      //Resizes for camera, not sure how we're supposed ot use this
+      const resized = tf.image.resizeBilinear(img, [640, 480]) 
+      const casted = resized.cast('int32')
+
+      //Change so that it works with our model
+      const expanded = casted.expandDims(0)
+
+      const obj = await net.executeAsync(expanded)
+      console.log(obj) //See our progress
+
+      //These indices might change depending on what the model returns
+      const boxes = await obj[1].array()
+      const classes = await obj[2].array()
+      const scores = await obj[4].array()
 
       // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
 
       // 5. TODO - Update drawing utility
       // drawSomething(obj, ctx)  
+
+      //The 0.8 is the threshold for detections (like how accurate it is)
+      requestAnimationFrame(()=>{drawRect(boxes[0], classes[0], 
+        scores[0], 0.8, videoWidth, videoHeight, ctx)})
+
+      //Dispose here in order to manage memory
+      tf.dispose(img)
+      tf.dispose(resized)
+      tf.dispose(casted)
+      tf.dispose(expanded)
+      tf.dispose(obj)
+
     }
   };
 
